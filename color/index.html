@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Color — SINGULARITY</title>
+<meta name="description" content="How color vision works, with two interactive tools.">
+<meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="site">
+<nav><a class="home" href="../">SINGULARITY</a><a href="../color/">Color</a><a href="../branch-compatibilism/">Branch Compatibilism</a></nav>
+</header>
+<main>
+<h1>Color</h1>
+<p class="lede">Color is not a property of light. It is what a particular eye, with three kinds of cone, does with light.</p>
+
+<h2>Tools</h2>
+<ul class="index">
+<li><a href="explorer/">Color Vision Explorer</a><span class="desc">Cone sensitivity, phone subpixel output and a color band on one light-frequency axis, with a live solver for what a screen can and cannot reproduce.</span></li>
+<li><a href="line-of-purples/">The Line of Purples</a><span class="desc">Six interactive sections on why magenta is not in the rainbow, why screens fall short of a real laser, and why leaves are green.</span></li>
+</ul>
+
+<h2>How the eye sees color</h2>
+<p>The eye has no wavelength detector. It has three cone types, S, M and L, each responding to a broad, overlapping range of light. The brain compares their outputs. Any two lights that produce the same three responses look identical, however different their spectra.</p>
+<p>That is why a phone screen can imitate almost any color using only three narrow emitters, and also why some colors it can never reproduce.</p>
+
+<h2>Why purple is not a spectral color</h2>
+<p>Violet is real. It is light of roughly 380 to 450 nm, and a 405 nm laser pointer is the easiest way to see it. Purple and magenta are different. No single wavelength produces them. They appear when the S and L cones are stimulated together with little M, which is a mixture the spectrum never produces on its own.</p>
+<p>The L cone has a small secondary sensitivity near 400 to 420 nm. That is why deep violet has a reddish tint, and why the ends of the spectrum can be joined into a circle. Magenta fills the gap in that circle, along the line of purples.</p>
+
+<h2>Reference numbers</h2>
+<table>
+<tr><th>Cone</th><th>Peak</th><th>Note</th></tr>
+<tr><td>S (blue)</td><td>~430 nm</td><td>Oldest system, gene on an autosome</td></tr>
+<tr><td>M (green)</td><td>~530 nm</td><td>Duplicate of the L gene, on the X chromosome</td></tr>
+<tr><td>L (red)</td><td>~564 nm</td><td>Peaks in yellow-green, not red</td></tr>
+</table>
+<table>
+<tr><th>Phone OLED subpixel</th><th>Wavelength</th><th>Note</th></tr>
+<tr><td>Blue</td><td>~450–460 nm</td><td>Near the S peak</td></tr>
+<tr><td>Green</td><td>~520–530 nm</td><td>Slightly short of the M peak</td></tr>
+<tr><td>Red</td><td>~620–630 nm</td><td>Placed past the L peak to limit M crosstalk</td></tr>
+</table>
+
+<h2>Pigments</h2>
+<table>
+<tr><th>Color</th><th>Code</th><th>Name</th></tr>
+<tr><td>Violet</td><td>PV23</td><td>Dioxazine Violet. Look for this code alone, with no PR mixed in.</td></tr>
+<tr><td>Magenta</td><td>PV19</td><td>Quinacridone Magenta</td></tr>
+</table>
+<p class="dim">Color Index codes are printed on the tube, marked Pigment or Colour Index.</p>
+
+<h2>Rods</h2>
+<p>Rods peak near 498 nm and only work in dim light. They carry intensity, not color.</p>
+</main>
+<footer class="site">Nick Valente</footer>
+</body>
+</html>

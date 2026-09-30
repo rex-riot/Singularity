@@ -1,0 +1,76 @@
+/* SINGULARITY site — white on black, after the AI terminal.
+   Colors follow DLSP: ^^X128 white, ^^X-128 black, ^^WR warm red accent. */
+:root {
+  --bg: #000000;
+  --fg: #ffffff;
+  --dim: #8a8a8a;
+  --rule: #2a2a2a;
+  --accent: #E8350A;
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--bg); }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Iosevka Term", "Iosevka", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-weight: 300;
+  font-size: 18px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+main, header.site, footer.site {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+header.site { padding-top: 2rem; padding-bottom: 1rem; }
+header.site nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+header.site a.home { margin-right: auto; }
+
+main { padding-top: 3rem; padding-bottom: 5rem; }
+
+footer.site { padding-top: 1.5rem; padding-bottom: 3rem; color: var(--dim); border-top: 1px solid var(--rule); font-size: 0.85rem; }
+
+h1, h2, h3 { font-weight: 300; line-height: 1.3; }
+h1 { font-size: 2rem; margin: 0 0 1.5rem; }
+h2 { font-size: 1.25rem; margin: 3.5rem 0 1rem; }
+h3 { font-size: 1rem; margin: 2rem 0 0.5rem; color: var(--dim); }
+
+p { margin: 0 0 1.25rem; }
+em { font-style: italic; }
+strong { font-weight: 500; }
+
+a { color: var(--fg); text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 0.25em; }
+a:hover, a:focus-visible { color: var(--accent); text-decoration-color: var(--accent); }
+
+.dim { color: var(--dim); }
+.lede { color: var(--dim); }
+
+hr { border: 0; border-top: 1px solid var(--rule); margin: 3rem 0; }
+
+ul.index { list-style: none; padding: 0; margin: 0; }
+ul.index li { padding: 1rem 0; border-top: 1px solid var(--rule); }
+ul.index li:last-child { border-bottom: 1px solid var(--rule); }
+ul.index a { text-decoration: none; }
+ul.index .desc { display: block; color: var(--dim); font-size: 0.9rem; }
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 1.5rem; font-size: 0.9rem; }
+th, td { text-align: left; padding: 0.5rem 0.75rem 0.5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 500; color: var(--dim); }
+
+code { font-family: inherit; color: var(--accent); }
+
+blockquote { margin: 0 0 1.25rem; padding-left: 1.25rem; border-left: 1px solid var(--accent); color: var(--dim); }
+
+::selection { background: var(--accent); color: var(--bg); }
+
+@media (max-width: 600px) {
+  body { font-size: 16px; }
+  h1 { font-size: 1.6rem; }
+}
