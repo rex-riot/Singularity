@@ -1,51 +1,34 @@
 <meta charset="utf-8">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/fonts.css">
 <title>The Line of Purples</title>
 <style>
   :root{
-    --bg:#F1F1F6; --surface:#FFFFFF; --surface-2:#E7E8EF;
-    --ink:#191A21; --ink-muted:#61626C; --line:#D9DAE2;
-    --accent:#5A32A0; --accent-ink:#FFFFFF;
-    --cone-s:#4C6FEF; --cone-m:#1B9E70; --cone-l:#D2472F; --cone-rod:#84869A;
-    --magenta:#C22E96;
-    --shadow:0 1px 2px rgba(20,20,30,0.07), 0 10px 28px rgba(20,20,30,0.06);
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#0C0D12; --surface:#15161D; --surface-2:#1D1F29;
-      --ink:#EDEBE5; --ink-muted:#9799A4; --line:#292C37;
-      --accent:#BB90F2; --accent-ink:#15161D;
-      --cone-s:#7C9BFF; --cone-m:#39C68C; --cone-l:#FF7C60; --cone-rod:#AAACB8;
-      --magenta:#E866C4;
-      --shadow:0 1px 2px rgba(0,0,0,0.45), 0 14px 32px rgba(0,0,0,0.4);
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#0C0D12; --surface:#15161D; --surface-2:#1D1F29;
-    --ink:#EDEBE5; --ink-muted:#9799A4; --line:#292C37;
-    --accent:#BB90F2; --accent-ink:#15161D;
+    --bg:#000; --surface:#000; --surface-2:#141414;
+    --ink:#fff; --ink-muted:#8a8a8a; --line:#2a2a2a;
+    --accent:#E8350A; --accent-ink:#000;
     --cone-s:#7C9BFF; --cone-m:#39C68C; --cone-l:#FF7C60; --cone-rod:#AAACB8;
     --magenta:#E866C4;
-    --shadow:0 1px 2px rgba(0,0,0,0.45), 0 14px 32px rgba(0,0,0,0.4);
+    --shadow:none;
   }
 
   *{box-sizing:border-box;}
   body{
     background:var(--bg); color:var(--ink);
-    font-family:'Spectral', Georgia, 'Times New Roman', serif;
-    font-size:17px; line-height:1.6;
+    font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace;
+    font-size:17px; line-height:1.7; font-weight:300;
     -webkit-font-smoothing:antialiased;
   }
   ::selection{ background:var(--accent); color:var(--accent-ink); }
 
-  .mono{ font-family:'IBM Plex Mono', ui-monospace, Menlo, monospace; font-variant-numeric:tabular-nums; }
+  .mono{ font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-variant-numeric:tabular-nums; }
 
-  main{ max-width:760px; margin:0 auto; padding:0 24px 40px; }
+  main{ max-width:1100px; margin:0 auto; padding:0 24px 40px; }
   section, header.hero{ padding:76px 0 64px; border-bottom:1px solid var(--line); }
   footer{ padding:56px 0 80px; }
 
   .eyebrow{
-    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.14em;
+    font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-size:12px; letter-spacing:.14em;
     text-transform:uppercase; color:var(--ink-muted); margin:0 0 18px;
   }
   h1{
@@ -58,9 +41,9 @@
   }
   .lede{ font-size:1.1rem; color:var(--ink); max-width:62ch; margin:0 0 8px; }
   .lede em, p em{ font-style:italic; color:var(--ink); }
-  p{ margin:0 0 16px; max-width:66ch; }
+  p{ margin:0 0 16px; max-width:70ch; }
   .caption{ font-size:.92rem; color:var(--ink-muted); max-width:60ch; }
-  .num{ font-family:'IBM Plex Mono', monospace; color:var(--accent); }
+  .num{ font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; color:var(--accent); }
 
   .panel{
     background:var(--surface); border:1px solid var(--line); border-radius:14px;
@@ -71,7 +54,7 @@
   .panel-row > *{ flex:1 1 260px; min-width:0; }
 
   .field-label{
-    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.1em;
+    font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-size:11px; letter-spacing:.1em;
     text-transform:uppercase; color:var(--ink-muted); display:flex; justify-content:space-between;
     margin-bottom:8px;
   }
@@ -99,18 +82,18 @@
   .meter{ flex:1; display:flex; flex-direction:column; align-items:center; height:100%; }
   .meter-track{ flex:1; width:100%; max-width:46px; background:var(--surface-2); border-radius:8px; display:flex; align-items:flex-end; overflow:hidden; border:1px solid var(--line); }
   .meter-fill{ width:100%; border-radius:6px 6px 0 0; transition:height .05s linear; }
-  .meter-label{ margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; text-align:center; color:var(--ink-muted); line-height:1.4; }
+  .meter-label{ margin-top:8px; font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-size:11px; text-align:center; color:var(--ink-muted); line-height:1.4; }
   .meter-label b{ color:var(--ink); font-size:12px; display:block; }
 
   .readout{ display:flex; gap:24px; flex-wrap:wrap; align-items:baseline; margin:18px 0 4px; }
-  .readout .big{ font-family:'IBM Plex Mono',monospace; font-size:2rem; font-weight:600; }
-  .readout .hue-name{ font-family:'Spectral',serif; font-style:italic; font-size:1.1rem; color:var(--ink-muted); }
+  .readout .big{ font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-size:2rem; font-weight:600; }
+  .readout .hue-name{ font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-style:italic; font-size:1.1rem; color:var(--ink-muted); }
 
   svg{ display:block; width:100%; height:auto; }
-  svg text{ font-family:'IBM Plex Mono', monospace; fill:var(--ink-muted); }
+  svg text{ font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; fill:var(--ink-muted); }
   svg .axis-line{ stroke:var(--line); stroke-width:1; }
   .chip-btn{
-    font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.03em;
+    font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-size:12px; letter-spacing:.03em;
     background:var(--surface-2); color:var(--ink); border:1px solid var(--line);
     border-radius:999px; padding:7px 14px; cursor:pointer;
   }
@@ -121,7 +104,7 @@
   .swatch-row{ display:flex; gap:20px; margin:18px 0 6px; flex-wrap:wrap; }
   .swatch{ display:flex; flex-direction:column; gap:8px; }
   .swatch-box{ width:96px; height:96px; border-radius:10px; border:1px solid var(--line); box-shadow:var(--shadow); }
-  .swatch-label{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-muted); max-width:110px; }
+  .swatch-label{ font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-size:11px; color:var(--ink-muted); max-width:110px; }
   .swatch-label b{ color:var(--ink); display:block; font-size:12.5px; }
 
   .railnav{
@@ -136,7 +119,7 @@
   .railnav a.active{ box-shadow:0 0 0 3px var(--bg), 0 0 0 5px var(--ink-muted); }
   .railnav a::after{
     content:attr(data-label); position:absolute; right:22px; top:50%; transform:translateY(-50%);
-    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink); white-space:nowrap;
+    font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-size:11px; color:var(--ink); white-space:nowrap;
     background:var(--surface); border:1px solid var(--line); padding:3px 8px; border-radius:6px;
     opacity:0; pointer-events:none; transition:opacity .12s ease;
   }
@@ -149,8 +132,21 @@
   @media (prefers-reduced-motion: reduce){
     *{ transition:none !important; animation:none !important; }
   }
+
+  /* flatten to match the site: square corners, no shadows, no bold serif weights */
+  h1,h2{ font-weight:300; letter-spacing:0; }
+  .panel,.chip-btn,.swatch-box,.railnav a::after,.meter-track,.meter-fill,#wl-slider,input[type="range"]{ border-radius:0 !important; box-shadow:none !important; }
+  .readout .big{ font-weight:500; }
+  .lede em,p em,.readout .hue-name{ font-style:italic; }
+
+  /* --- SINGULARITY site chrome --- */
+  .site-back{ position:fixed; top:10px; left:12px; z-index:1000; font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-weight:300; font-size:12px;
+    color:#8a8a8a; background:#000; padding:2px 6px; text-decoration:none; }
+  .site-back:hover{ color:#E8350A; }
+  body{ font-variant-ligatures:none; }
 </style>
 
+<a class="site-back" href="/color/">&larr; SINGULARITY / Color</a>
 <nav class="railnav" aria-label="Sections">
   <a href="#hero" data-label="Univariance" data-spectrum></a>
   <a href="#circle" data-label="The Line of Purples"></a>

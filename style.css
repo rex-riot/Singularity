@@ -16,17 +16,18 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font-family: "Iosevka Term", "Iosevka", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-family: "Iosevka", "Iosevka Term", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   font-weight: 300;
+  font-variant-ligatures: none;
   font-size: 18px;
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
 }
 
 main, header.site, footer.site {
-  max-width: 44rem;
+  max-width: 78rem;
   margin: 0 auto;
-  padding: 0 1.25rem;
+  padding: 0 2rem;
 }
 
 header.site { padding-top: 2rem; padding-bottom: 1rem; }
@@ -42,7 +43,8 @@ h1 { font-size: 2rem; margin: 0 0 1.5rem; }
 h2 { font-size: 1.25rem; margin: 3.5rem 0 1rem; }
 h3 { font-size: 1rem; margin: 2rem 0 0.5rem; color: var(--dim); }
 
-p { margin: 0 0 1.25rem; }
+p { margin: 0 0 1.25rem; max-width: 62rem; }
+ul, ol { max-width: 62rem; }
 em { font-style: italic; }
 strong { font-weight: 500; }
 
@@ -70,7 +72,20 @@ blockquote { margin: 0 0 1.25rem; padding-left: 1.25rem; border-left: 1px solid 
 
 ::selection { background: var(--accent); color: var(--bg); }
 
+/* two-up layouts on wide screens */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 4rem; }
+ul.index.grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 4rem; }
+ul.index.grid li:nth-last-child(2):nth-child(odd) { border-bottom: 1px solid var(--rule); }
+
+@media (min-width: 1500px) { body { font-size: 20px; } }
+
+@media (max-width: 900px) {
+  .cols, ul.index.grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 600px) {
+  main, header.site, footer.site { padding: 0 1.25rem; }
+  header.site nav { font-size: 0.8rem; gap: 1rem; }
   body { font-size: 16px; }
   h1 { font-size: 1.6rem; }
 }

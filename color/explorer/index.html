@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/fonts.css">
 <title>Color Vision Explorer</title>
 <style>
   html, body {
@@ -38,13 +40,13 @@
   text {
     fill: #fff;
     stroke: none;
-    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-family: 'Iosevka', ui-monospace, Menlo, Consolas, monospace;
     font-size: var(--chart-font-size, 13px);
   }
   .toggle-row {
     display: flex;
     gap: 28px;
-    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-family: 'Iosevka', ui-monospace, Menlo, Consolas, monospace;
     font-size: 13px;
   }
   .toggle-row button {
@@ -71,7 +73,7 @@
     gap: 12px;
   }
   .section-label {
-    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-family: 'Iosevka', ui-monospace, Menlo, Consolas, monospace;
     font-size: 13px;
     letter-spacing: 1.5px;
     white-space: nowrap;
@@ -114,7 +116,7 @@
     flex-direction: row;
     align-items: stretch;
     gap: 20px;
-    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-family: 'Iosevka', ui-monospace, Menlo, Consolas, monospace;
     font-size: 13px;
   }
   .results[hidden] {
@@ -132,9 +134,16 @@
     background: #000;
     flex-shrink: 0;
   }
+
+  /* --- SINGULARITY site chrome --- */
+  .site-back{ position:fixed; top:10px; left:12px; z-index:1000; font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-weight:300; font-size:12px;
+    color:#8a8a8a; background:#000; padding:2px 6px; text-decoration:none; }
+  .site-back:hover{ color:#E8350A; }
+  body{ font-variant-ligatures:none; }
 </style>
 </head>
 <body>
+<a class="site-back" href="/color/">&larr; SINGULARITY / Color</a>
 <div class="controls">
   <div class="section">
     <div class="section-label">CONE SENSITIVITY:</div>

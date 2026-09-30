@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/fonts.css">
+<title>LMS Color Space</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #000;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #fff;
+    box-sizing: border-box;
+    padding: 48px 32px;
+  }
+  .section-label {
+    font-family: 'Iosevka', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
+  }
+  .controls {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    column-gap: 36px;
+    row-gap: 10px;
+  }
+  .section {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .toggle-row {
+    display: flex;
+    gap: 20px;
+    font-family: 'Iosevka', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 13px;
+  }
+  .toggle-row button {
+    background: none;
+    border: none;
+    color: #fff;
+    font: inherit;
+    padding: 4px 0;
+    cursor: pointer;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+  }
+  .toggle-row button[data-active="true"] {
+    text-decoration: underline;
+    text-underline-offset: 5px;
+  }
+  .toggle-row button:focus-visible {
+    outline: 1px solid #fff;
+  }
+  .user-color-panel {
+    display: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    column-gap: 28px;
+    row-gap: 10px;
+    font-family: 'Iosevka', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 13px;
+  }
+  .user-color-panel.active {
+    display: flex;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .slider-row label {
+    width: 12px;
+    opacity: 0.8;
+  }
+  .slider-row input[type="range"] {
+    width: 130px;
+    accent-color: #fff;
+  }
+  .slider-row .slider-val {
+    width: 30px;
+    text-align: right;
+    opacity: 0.7;
+  }
+  .swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .swatch {
+    width: 26px;
+    height: 26px;
+    border: 1px solid #fff;
+    box-sizing: border-box;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    max-width: 1050px;
+    max-height: 900px;
+    touch-action: none;
+  }
+  #chart {
+    cursor: grab;
+  }
+  #chart.dragging {
+    cursor: grabbing;
+  }
+  line, path {
+    stroke: #fff;
+    fill: none;
+  }
+  circle {
+    fill: #fff;
+    stroke: none;
+  }
+  text {
+    fill: #fff;
+    stroke: none;
+    font-family: 'Iosevka', ui-monospace, Menlo, Consolas, monospace;
+  }
+  .axis-letter {
+    font-size: 20px;
+  }
+  .tick-label {
+    font-size: 11px;
+    opacity: 0.6;
+  }
+  #pigment-layer polygon, #biological-layer polygon, #rgb-gamut-layer polygon {
+    stroke: none;
+  }
+
+  /* --- SINGULARITY site chrome --- */
+  .site-back{ position:fixed; top:10px; left:12px; z-index:1000; font-family:'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-weight:300; font-size:12px;
+    color:#8a8a8a; background:#000; padding:2px 6px; text-decoration:none; }
+  .site-back:hover{ color:#E8350A; }
+  body{ font-variant-ligatures:none; }
+</style>
+</head>
+<body>
+<a class="site-back" href="/color/">&larr; SINGULARITY / Color</a>
+<div class="section-label">LMS COLOR SPACE — 0&ndash;100% RELATIVE CONE EXCITATION PER AXIS</div>
+<div class="controls">
+  <div class="section">
+    <div class="section-label">AXES:</div>
+    <div id="axes-toggle" class="toggle-row">
+      <button data-key="on" data-active="true">ON</button>
+      <button data-key="off">OFF</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-label">BIOLOGICAL GAMUT:</div>
+    <div id="biological-toggle" class="toggle-row">
+      <button data-key="on" data-active="true">ON</button>
+      <button data-key="off">OFF</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-label">PIGMENT GAMUT:</div>
+    <div id="pigment-toggle" class="toggle-row">
+      <button data-key="on" data-active="true">ON</button>
+      <button data-key="off">OFF</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-label">RGB GAMUT:</div>
+    <div id="rgb-gamut-toggle" class="toggle-row">
+      <button data-key="on" data-active="true">ON</button>
+      <button data-key="off">OFF</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-label">RGB PIXELS:</div>
+    <div id="pixels-toggle" class="toggle-row">
+      <button data-key="on" data-active="true">ON</button>
+      <button data-key="off">OFF</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-label">USER COLOR:</div>
+    <div id="user-color-toggle" class="toggle-row">
+      <button data-key="on">ON</button>
+      <button data-key="off" data-active="true">OFF</button>
+    </div>
+  </div>
+</div>
+<div id="user-color-panel" class="user-color-panel">
+  <div class="slider-row">
+    <label for="user-r">R</label>
+    <input type="range" id="user-r" min="0" max="255" value="128">
+    <span id="user-r-val" class="slider-val">128</span>
+  </div>
+  <div class="slider-row">
+    <label for="user-g">G</label>
+    <input type="range" id="user-g" min="0" max="255" value="128">
+    <span id="user-g-val" class="slider-val">128</span>
+  </div>
+  <div class="slider-row">
+    <label for="user-b">B</label>
+    <input type="range" id="user-b" min="0" max="255" value="128">
+    <span id="user-b-val" class="slider-val">128</span>
+  </div>
+  <div class="swatch-row">
+    <div id="user-swatch" class="swatch"></div>
+    <span id="user-hex">#808080</span>
+  </div>
+</div>
+<svg id="chart" viewBox="0 0 900 780" xmlns="http://www.w3.org/2000/svg"></svg>
+
+<script>
+(function () {
+  "use strict";
+
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var svg = document.getElementById("chart");
+
+  function el(tag, attrs) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  // ==================================================================
+  // Cone fundamentals + daylight illuminant (real measured data, not
+  // hand-tuned) -- copied verbatim from Color Vision Explorer, where the
+  // sourcing is documented in full.
+  // ==================================================================
+
+  // Stockman & Sharpe (2000) 2-degree cone fundamentals, energy (linear),
+  // 5nm steps. Source: cvrl.org. Columns: [wavelength_nm, L, M, S].
+  var SS2_DATA = [[390,0.000415003,0.000368349,0.00954729],[395,0.00105192,0.000958658,0.0238250],[400,0.00240836,0.00226991,0.0566498],[405,0.00483339,0.00470010,0.122451],[410,0.00872127,0.00879369,0.233008],[415,0.0133837,0.0145277,0.381363],[420,0.0184480,0.0216649,0.543618],[425,0.0229317,0.0295714,0.674474],[430,0.0281877,0.0394566,0.802555],[435,0.0341054,0.0518199,0.903573],[440,0.0402563,0.0647782,0.991020],[445,0.0449380,0.0758812,0.991515],[450,0.0498639,0.0870524,0.955393],[455,0.0553418,0.0981934,0.860240],[460,0.0647164,0.116272,0.786704],[465,0.0806894,0.144541,0.738268],[470,0.0994755,0.175893,0.646359],[475,0.118802,0.205398,0.516411],[480,0.140145,0.235754,0.390333],[485,0.163952,0.268063,0.290322],[490,0.191556,0.303630,0.211867],[495,0.232926,0.357061,0.160526],[500,0.288959,0.427764,0.122839],[505,0.359716,0.515587,0.0888965],[510,0.443683,0.615520,0.0608210],[515,0.536494,0.719154,0.0428123],[520,0.628561,0.816610,0.0292033],[525,0.704720,0.885550,0.0193912],[530,0.770630,0.935687,0.0126013],[535,0.825711,0.968858,0.00809453],[540,0.881011,0.995217,0.00508900],[545,0.919067,0.997193,0.00316893],[550,0.940198,0.977193,0.00195896],[555,0.965733,0.956583,0.00120277],[560,0.981445,0.917750,0.000740174],[565,0.994486,0.873205,0.000455979],[570,0.999993,0.813509,0.000281800],[575,0.992310,0.740291,0.000175039],[580,0.969429,0.653274,0.000109454],[585,0.955602,0.572597,0.0000689991],[590,0.927673,0.492599,0.0000439024],[595,0.885969,0.411246,0.0000282228],[600,0.833982,0.334429,0.0000183459],[605,0.775103,0.264872,0.0000120667],[610,0.705713,0.205273,0.00000803488],[615,0.630773,0.156243,0.00000541843],[620,0.554224,0.116641,null],[625,0.479941,0.0855872,null],[630,0.400711,0.0621120,null],[635,0.327864,0.0444879,null],[640,0.265784,0.0314282,null],[645,0.213284,0.0218037,null],[650,0.165141,0.0154480,null],[655,0.124749,0.0107120,null],[660,0.0930085,0.00730255,null],[665,0.0685100,0.00497179,null],[670,0.0498661,0.00343667,null],[675,0.0358233,0.00237617,null],[680,0.0253790,0.00163734,null],[685,0.0177201,0.00112128,null],[690,0.0121701,0.000761051,null],[695,0.00847170,0.000525457,null],[700,0.00589749,0.000365317,null]];
+
+  // CIE Standard Illuminant D65, relative spectral power distribution, 5nm
+  // steps. Source: CIE colorimetry standard (ISO/CIE 11664-2).
+  var D65_DATA = [[380,49.9755],[385,52.3118],[390,54.6482],[395,68.7015],[400,82.7549],[405,87.1204],[410,91.486],[415,92.4589],[420,93.4318],[425,90.057],[430,86.6823],[435,95.7736],[440,104.865],[445,110.936],[450,117.008],[455,117.41],[460,117.812],[465,116.336],[470,114.861],[475,115.392],[480,115.923],[485,112.367],[490,108.811],[495,109.082],[500,109.354],[505,108.578],[510,107.802],[515,106.296],[520,104.79],[525,106.239],[530,107.689],[535,106.047],[540,104.405],[545,104.225],[550,104.046],[555,102.023],[560,100.0],[565,98.1671],[570,96.3342],[575,96.0611],[580,95.788],[585,92.2368],[590,88.6856],[595,89.3459],[600,90.0062],[605,89.8026],[610,89.5991],[615,88.6489],[620,87.6987],[625,85.4936],[630,83.2886],[635,83.4939],[640,83.6992],[645,81.863],[650,80.0268],[655,80.1207],[660,80.2146],[665,81.2462],[670,82.2778],[675,80.281],[680,78.2842],[685,74.0027],[690,69.7213],[695,70.6652],[700,71.6091]];
+
+  function interpDataset(data, colIndex, nm) {
+    if (nm < data[0][0] || nm > data[data.length - 1][0]) return 0;
+    for (var i = 0; i < data.length - 1; i++) {
+      var a = data[i], b = data[i + 1];
+      if (nm >= a[0] && nm <= b[0]) {
+        var av = a[colIndex] === null ? 0 : a[colIndex];
+        var bv = b[colIndex] === null ? 0 : b[colIndex];
+        var t = (nm - a[0]) / (b[0] - a[0]);
+        return av + (bv - av) * t;
+      }
+    }
+    return 0;
+  }
+
+  // ==================================================================
+  // Rosch-MacAdam Daylight Pigment Gamut.
+  //
+  // The boundary of "every color a human can perceive off a physical
+  // surface" is traced by reflectance spectra that are either 0 or 1 at
+  // every wavelength and switch state at most twice: a single included
+  // band ("this range reflects, nothing else does") or a single excluded
+  // notch ("everything reflects except this range"). Sweeping every band
+  // position across the visible spectrum -- and separately every notch
+  // position -- generates the two halves of the solid's boundary surface
+  // (MacAdam 1935). This is the real, standard construction, not an
+  // approximation of one.
+  //
+  // The wavelength axis is split into NBINS equal bins; a band/notch is
+  // specified by its first and last included/excluded bin (i, j), i<=j.
+  // Each axis's 100% is defined as the response to a perfect white
+  // reflector (band = every bin) under D65 -- so the solid's white tip
+  // lands exactly on the space's (100,100,100) corner and its black tip
+  // lands exactly on the origin already drawn as the axes' shared base.
+  // ==================================================================
+
+  var NBINS = 20;
+  var LAM_MIN = 380, LAM_MAX = 700;
+  var binL = [], binM = [], binS = [], binD = [];
+  for (var k = 0; k < NBINS; k++) {
+    var lamC = LAM_MIN + (k + 0.5) * (LAM_MAX - LAM_MIN) / NBINS;
+    binL.push(interpDataset(SS2_DATA, 1, lamC));
+    binM.push(interpDataset(SS2_DATA, 2, lamC));
+    binS.push(interpDataset(SS2_DATA, 3, lamC));
+    binD.push(interpDataset(D65_DATA, 1, lamC));
+  }
+
+  var cumL = [0], cumM = [0], cumS = [0];
+  for (var b = 0; b < NBINS; b++) {
+    cumL.push(cumL[b] + binL[b] * binD[b]);
+    cumM.push(cumM[b] + binM[b] * binD[b]);
+    cumS.push(cumS[b] + binS[b] * binD[b]);
+  }
+  var WHITE = { L: cumL[NBINS], M: cumM[NBINS], S: cumS[NBINS] };
+
+  // percent-space vertex for the "included band [i,j]" family
+  function vertexBand(i, j) {
+    return [
+      100 * (cumL[j + 1] - cumL[i]) / WHITE.L,
+      100 * (cumM[j + 1] - cumM[i]) / WHITE.M,
+      100 * (cumS[j + 1] - cumS[i]) / WHITE.S
+    ];
+  }
+  // the "excluded notch [i,j]" family is exactly the white point minus the
+  // band family at the same (i,j) -- reflectance is linear in cone response,
+  // and notch(i,j) = white - band(i,j) pointwise across the spectrum.
+  function vertexNotch(i, j) {
+    var v = vertexBand(i, j);
+    return [100 - v[0], 100 - v[1], 100 - v[2]];
+  }
+
+  // Triangulate the i<=j grid (a right-triangular domain) for one family,
+  // returning a flat list of [pA, pB, pC] percent-space triangles.
+  function buildTriangles(vertexFn) {
+    var grid = [];
+    for (var i = 0; i < NBINS; i++) {
+      grid.push([]);
+      for (var j = i; j < NBINS; j++) grid[i].push(vertexFn(i, j));
+    }
+    var tris = [];
+    for (i = 0; i < NBINS - 1; i++) {
+      for (j = i; j < NBINS - 1; j++) {
+        var p00 = grid[i][j - i];
+        var p01 = grid[i][j + 1 - i];
+        var p11 = grid[i + 1][j + 1 - (i + 1)];
+        tris.push([p00, p01, p11]);
+        if (j > i) {
+          var p10 = grid[i + 1][j - (i + 1)];
+          tris.push([p00, p11, p10]);
+        }
+      }
+    }
+    return tris;
+  }
+
+  var PIGMENT_TRIANGLES = buildTriangles(vertexBand).concat(buildTriangles(vertexNotch));
+
+  function coneL(nm) { return interpDataset(SS2_DATA, 1, nm); }
+  function coneM(nm) { return interpDataset(SS2_DATA, 2, nm); }
+  function coneS(nm) { return interpDataset(SS2_DATA, 3, nm); }
+  function overlapIntegral(coneFn, spectrumFn) {
+    var sum = 0;
+    for (var nm = 380; nm <= 700; nm += 1) sum += coneFn(nm) * spectrumFn(nm);
+    return sum;
+  }
+
+  // ==================================================================
+  // Biological Visible Gamut -- every color the eye can perceive from
+  // ANY light source, not just daylight reflected off a surface.
+  //
+  // Self-luminous sources have no natural brightness cap the way
+  // reflectance is capped at 100% (see the pigment gamut above). Rather
+  // than invent a new one, this uses the exact same convention as every
+  // other axis value in this file: a light's brightness is turned up
+  // until its own most-stimulated cone reaches 100% *of the same
+  // WHITE.L/M/S reference the pigment gamut's own axes are built from* --
+  // not its own raw cone response taken in isolation. (An earlier version
+  // of this solid skipped the WHITE division and scaled each wavelength
+  // against its own raw response instead. That was a real bug, not an
+  // approximation: it put every point in this solid in a different,
+  // incompatible coordinate system from literally everything else on
+  // these axes, silently, since a lone monochromatic wavelength's own
+  // shape happened to still look plausible either way. It only became
+  // obvious once the RGB Display Gamut below was checked against this
+  // hull and came out partly outside a boundary that's supposed to
+  // contain everything visible -- see that section's comment for the
+  // second, separate bug that same symptom uncovered.)
+  //
+  // Applying that, wavelength by wavelength, across the whole visible
+  // spectrum gives the "spectral locus" -- each monochromatic wavelength
+  // as bright as it can be before its dominant cone out-does a perfect
+  // reflector. A monochromatic light can look far more saturated than any
+  // reflective surface under daylight can (the same reason the RGB rays
+  // below go dashed past the pigment boundary), yet this solid still
+  // falls well short of the cube: the L, M, and S cone sensitivity curves
+  // overlap across the spectrum, so no wavelength excites just one of
+  // them.
+  //
+  // What bounds this solid on the side no single wavelength reaches --
+  // between deep violet and deep red, the "line of purples" territory
+  // (see [[Claude/Projects/The Line of Purples]]) -- is genuine mixtures
+  // of light, not a single wavelength. The first attempt at closing this
+  // side used a fake point (the rim's own centroid) purely to make the
+  // mesh watertight, which was a rendering trick, not real color data.
+  // The correct boundary is the actual 3D convex hull of every
+  // achievable point: black, every monochromatic wavelength at its own
+  // capped brightness, AND a broadband "white" light (flat power across
+  // the spectrum, brightness-capped the exact same way) -- because a
+  // mixture of many wavelengths together can reach further in some
+  // directions than any 2- or 3-wavelength combination can. It does:
+  // broadband white turns out to be a genuine vertex of the hull, and it
+  // caps exactly the red-violet gap -- a straight red-to-violet "line of
+  // purples" mix is the least saturated (most magenta, least green) point
+  // achievable there, and adding more of the spectrum back in (moving
+  // toward broadband white, which sits well up the M axis relative to a
+  // pure two-wavelength mix) is what actually bounds the solid on that
+  // side. That confirms the fold Nick predicted by eye before this was
+  // computed: magenta across the red-violet gap, fading toward white as
+  // M comes back in.
+  // ==================================================================
+
+  var SPECTRAL_LOCUS = [];
+  for (var lamNm = 390; lamNm <= 700; lamNm += 5) {
+    var whiteRelLMS = [100 * coneL(lamNm) / WHITE.L, 100 * coneM(lamNm) / WHITE.M, 100 * coneS(lamNm) / WHITE.S];
+    var domCone = Math.max(whiteRelLMS[0], whiteRelLMS[1], whiteRelLMS[2]);
+    SPECTRAL_LOCUS.push(domCone > 0 ? whiteRelLMS.map(function (v) { return v * 100 / domCone; }) : [0, 0, 0]);
+  }
+
+  // broadband "white": flat/equal-energy power across the visible range,
+  // WHITE-relative and own-dominant-cone normalized the same way as every
+  // point above.
+  var flatRaw = [0, 0, 0];
+  for (var nmFlat = 390; nmFlat <= 700; nmFlat += 1) {
+    flatRaw[0] += coneL(nmFlat) / WHITE.L; flatRaw[1] += coneM(nmFlat) / WHITE.M; flatRaw[2] += coneS(nmFlat) / WHITE.S;
+  }
+  var flatDom = Math.max(flatRaw[0], flatRaw[1], flatRaw[2]);
+  var BROADBAND_WHITE = flatRaw.map(function (v) { return v * 100 / flatDom; });
+
+  var ORIGIN_PT = [0, 0, 0];
+  var BIOLOGICAL_POINTS = [ORIGIN_PT].concat(SPECTRAL_LOCUS, [BROADBAND_WHITE]);
+
+  // ---- minimal incremental 3D convex hull (Quickhull-style) ----
+  // Small, dependency-free, exactly matching this file's existing "roll
+  // your own math, verify it numerically" approach (see Moller-Trumbore
+  // below). Tested separately against Euler's formula (V-E+F=2) and a
+  // full convexity check (every point on the non-positive side of every
+  // face's plane) before being folded in here.
+  function convexHull3D(points) {
+    var EPS = 1e-7;
+    function vsub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+    function vcross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+    function vdot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+    function vnorm(a) { return Math.sqrt(vdot(a, a)); }
+
+    var n = points.length, i0 = 0, i1 = 1, maxD = -1, i, j;
+    for (i = 0; i < n; i++) for (j = i + 1; j < n; j++) {
+      var d = vnorm(vsub(points[i], points[j]));
+      if (d > maxD) { maxD = d; i0 = i; i1 = j; }
+    }
+    var i2 = -1; maxD = -1;
+    for (i = 0; i < n; i++) {
+      if (i === i0 || i === i1) continue;
+      var ab = vsub(points[i1], points[i0]), ap = vsub(points[i], points[i0]);
+      var d2 = vnorm(vcross(ab, ap)) / (vnorm(ab) || 1);
+      if (d2 > maxD) { maxD = d2; i2 = i; }
+    }
+    var nrm012 = vcross(vsub(points[i1], points[i0]), vsub(points[i2], points[i0]));
+    var i3 = -1; maxD = -1;
+    for (i = 0; i < n; i++) {
+      if (i === i0 || i === i1 || i === i2) continue;
+      var d3 = Math.abs(vdot(vsub(points[i], points[i0]), nrm012)) / (vnorm(nrm012) || 1);
+      if (d3 > maxD) { maxD = d3; i3 = i; }
+    }
+
+    var tetCentroid = [points[i0], points[i1], points[i2], points[i3]].reduce(function (acc, p) {
+      return [acc[0] + p[0] / 4, acc[1] + p[1] / 4, acc[2] + p[2] / 4];
+    }, [0, 0, 0]);
+
+    function makeFace(a, b, c) {
+      var nrm = vcross(vsub(points[b], points[a]), vsub(points[c], points[a]));
+      if (vdot(nrm, vsub(points[a], tetCentroid)) < 0) {
+        var t = b; b = c; c = t;
+        nrm = vcross(vsub(points[b], points[a]), vsub(points[c], points[a]));
+      }
+      return { v: [a, b, c], n: nrm };
+    }
+
+    var faces = [makeFace(i0, i1, i2), makeFace(i0, i1, i3), makeFace(i0, i2, i3), makeFace(i1, i2, i3)];
+    var used = {}; used[i0] = used[i1] = used[i2] = used[i3] = true;
+
+    for (i = 0; i < n; i++) {
+      if (used[i]) continue;
+      var p = points[i];
+      var visible = [];
+      faces.forEach(function (f, idx) {
+        if (vdot(f.n, vsub(p, points[f.v[0]])) > EPS) visible.push(idx);
+      });
+      if (visible.length === 0) continue;
+
+      var visibleSet = {};
+      visible.forEach(function (idx) { visibleSet[idx] = true; });
+
+      var edgeSet = {};
+      visible.forEach(function (idx) {
+        var v = faces[idx].v;
+        [[v[0], v[1]], [v[1], v[2]], [v[2], v[0]]].forEach(function (e) { edgeSet[e[0] + "," + e[1]] = true; });
+      });
+      var horizon = [];
+      visible.forEach(function (idx) {
+        var v = faces[idx].v;
+        [[v[0], v[1]], [v[1], v[2]], [v[2], v[0]]].forEach(function (e) {
+          if (!edgeSet[e[1] + "," + e[0]]) horizon.push(e);
+        });
+      });
+
+      var newFaces = [];
+      faces.forEach(function (f, idx) { if (!visibleSet[idx]) newFaces.push(f); });
+      horizon.forEach(function (e) { newFaces.push(makeFace(e[0], e[1], i)); });
+      faces = newFaces;
+      used[i] = true;
+    }
+
+    return faces;
+  }
+
+  var BIOLOGICAL_TRIANGLES = convexHull3D(BIOLOGICAL_POINTS).map(function (f) {
+    return [BIOLOGICAL_POINTS[f.v[0]], BIOLOGICAL_POINTS[f.v[1]], BIOLOGICAL_POINTS[f.v[2]]];
+  });
+
+  // "Is this point inside/on the biological gamut" (<=~0), and a
+  // bisection-based ray/hull crossing finder built on it. Deliberately
+  // not the Moller-Trumbore ray-triangle test used against the pigment
+  // gamut below: that one returned a spurious "no crossing" for one of
+  // the subpixel directions needed further down, almost certainly a ray
+  // passing too close to an edge of this particular mesh for its
+  // barycentric-coordinate tolerances. Bisecting on "which side of every
+  // face plane is this point on" has no such edge case -- it only ever
+  // needs a yes/no answer, and it's cheap at this mesh's size (94 faces,
+  // called a handful of times at page load, not per frame).
+  function biologicalContainmentT(pt) {
+    var maxV = -Infinity;
+    BIOLOGICAL_TRIANGLES.forEach(function (tri) {
+      var a = tri[0], b = tri[1], c = tri[2];
+      var e1 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+      var e2 = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+      var nrm = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]];
+      var nLen = Math.sqrt(nrm[0] * nrm[0] + nrm[1] * nrm[1] + nrm[2] * nrm[2]) || 1;
+      var d = [pt[0] - a[0], pt[1] - a[1], pt[2] - a[2]];
+      var v = (nrm[0] * d[0] + nrm[1] * d[1] + nrm[2] * d[2]) / nLen;
+      if (v > maxV) maxV = v;
+    });
+    return maxV;
+  }
+  function findBiologicalBoundaryT(dir) {
+    var lo = 0, hi = 1;
+    while (biologicalContainmentT(dir.map(function (v) { return v * hi; })) < 1e-7 && hi < 1e9) hi *= 2;
+    for (var iter = 0; iter < 60; iter++) {
+      var mid = (lo + hi) / 2;
+      if (biologicalContainmentT(dir.map(function (v) { return v * mid; })) > 1e-9) hi = mid; else lo = mid;
+    }
+    return lo;
+  }
+
+  // ==================================================================
+  // Phone OLED R/G/B subpixels -- each one's actual cone activation,
+  // drawn as a ray.
+  //
+  // Each subpixel is a light source, not a reflectance, so its cone
+  // response is a direct overlap integral against the SS2 cone data (no
+  // D65 illuminant term -- the illuminant *is* the emission spectrum).
+  // Parametric peak/FWHM values are the same generic phone-OLED figures
+  // used in Color Vision Explorer.
+  //
+  // Scaling a light's intensity scales L, M, and S by the same factor --
+  // brightness moves a point along a straight ray from black, it never
+  // changes direction, and that direction is the color.
+  //
+  // Past a certain point along that ray, the color is no longer something
+  // any *reflecting surface* could show you under D65 -- reflectance tops
+  // out at 100% of the light hitting it, but a self-luminous pixel has no
+  // such cap tied to daylight's own power at that wavelength. So each ray
+  // is split at exactly where it crosses the pigment gamut's own boundary
+  // (found by intersecting it against that gamut's own triangle mesh):
+  // solid up to there is achievable by daylight reflected off a surface;
+  // dashed beyond it is only achievable by a self-luminous source like
+  // this pixel.
+  // ==================================================================
+
+  function gauss(x, mu, sigma) { return Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2)); }
+  var FWHM_TO_SIGMA = 2 * Math.sqrt(2 * Math.LN2);
+  function gaussFWHM(nm, peakNm, fwhmNm) { return gauss(nm, peakNm, fwhmNm / FWHM_TO_SIGMA); }
+
+  // Moller-Trumbore ray-triangle intersection, ray from the origin along `dir`.
+  function rayTriangleT(dir, v0, v1, v2) {
+    var EPS = 1e-9;
+    var e1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
+    var e2 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]];
+    var h = [dir[1] * e2[2] - dir[2] * e2[1], dir[2] * e2[0] - dir[0] * e2[2], dir[0] * e2[1] - dir[1] * e2[0]];
+    var a = e1[0] * h[0] + e1[1] * h[1] + e1[2] * h[2];
+    if (Math.abs(a) < EPS) return null;
+    var f = 1 / a;
+    var s = [-v0[0], -v0[1], -v0[2]]; // origin - v0
+    var u = f * (s[0] * h[0] + s[1] * h[1] + s[2] * h[2]);
+    if (u < -1e-7 || u > 1 + 1e-7) return null;
+    var q = [s[1] * e1[2] - s[2] * e1[1], s[2] * e1[0] - s[0] * e1[2], s[0] * e1[1] - s[1] * e1[0]];
+    var v = f * (dir[0] * q[0] + dir[1] * q[1] + dir[2] * q[2]);
+    if (v < -1e-7 || u + v > 1 + 1e-7) return null;
+    return f * (e2[0] * q[0] + e2[1] * q[1] + e2[2] * q[2]);
+  }
+
+  function findGamutBoundaryT(dir) {
+    var best = null;
+    PIGMENT_TRIANGLES.forEach(function (tri) {
+      var t = rayTriangleT(dir, tri[0], tri[1], tri[2]);
+      if (t !== null && t > 1e-6 && (best === null || t < best)) best = t;
+    });
+    return best;
+  }
+
+  var SUBPIXELS = [
+    { key: "R", color: "#ff0000", fn: function (nm) { return gaussFWHM(nm, 630, 30); } },
+    { key: "G", color: "#00ff00", fn: function (nm) { return gaussFWHM(nm, 530, 30); } },
+    { key: "B", color: "#0000ff", fn: function (nm) { return gaussFWHM(nm, 450, 30); } }
+  ];
+
+  SUBPIXELS.forEach(function (sp) {
+    sp.unit = [
+      100 * overlapIntegral(coneL, sp.fn) / WHITE.L,
+      100 * overlapIntegral(coneM, sp.fn) / WHITE.M,
+      100 * overlapIntegral(coneS, sp.fn) / WHITE.S
+    ];
+  });
+
+  // Each individual channel is free to reach all the way out to its own
+  // crossing of the biological gamut's boundary -- a single subpixel,
+  // alone, dimmed independently of the other two, really can be "as
+  // bright as this hue can biologically look," the same way a single
+  // monochromatic wavelength can (see the biological gamut's own comment
+  // above). Once the coordinate-system bug there was fixed, that's
+  // exactly where "own dominant cone reaches 100% of WHITE.L/M/S" already
+  // lands each channel -- no separate boundary search needed here.
+  SUBPIXELS.forEach(function (sp) {
+    var dominantScale = 100 / Math.max(sp.unit[0], sp.unit[1], sp.unit[2]);
+    sp.point = sp.unit.map(function (v) { return v * dominantScale; });
+    sp.gamutT = findGamutBoundaryT(sp.unit);
+    sp.gamutPoint = sp.unit.map(function (v) { return v * sp.gamutT; });
+  });
+
+  // But the three channels *simultaneously lit* (what the RGB Display
+  // Gamut below actually needs) is a different question: two channels
+  // that are each individually right at the biological gamut's boundary
+  // will, added together, land well outside it -- and since a real
+  // screen showing any mix of its own channels is by definition
+  // something a human eye can perceive, that's not allowed. (This is
+  // exactly the bug Nick spotted by eye: the RGB Display Gamut's magenta
+  // corner -- R+B -- poking through the biological gamut's own
+  // magenta-to-white fold.) This does NOT mean sp.point above is wrong --
+  // one channel alone really can reach that far. It means the display
+  // gamut needs its own, more conservative set of primaries, separate
+  // from the individual ray tips.
+  //
+  // The fix is a single shared brightness scale for all three channels
+  // together, found by checking every non-negative combination of the
+  // three (each channel alone, each pair, all three) against the
+  // biological gamut's actual boundary and taking the most restrictive
+  // one -- so that any mix a real screen could show, at any combination
+  // of the three channels, is guaranteed to land inside/on it. Magenta
+  // (R+B) turns out to be the binding constraint, which tracks: magenta
+  // is exactly the color family that needs the rest of the spectrum
+  // mixed back in to reach broadband white (see the biological gamut's
+  // own comment above), making it the "tightest" direction in the whole
+  // hull.
+  var RGB_PRIMARY_SCALE = (function () {
+    var Ru = SUBPIXELS[0].unit, Gu = SUBPIXELS[1].unit, Bu = SUBPIXELS[2].unit;
+    function mixDir(r, g, b) {
+      return [r * Ru[0] + g * Gu[0] + b * Bu[0], r * Ru[1] + g * Gu[1] + b * Bu[1], r * Ru[2] + g * Gu[2] + b * Bu[2]];
+    }
+    var combos = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [1, 0, 1], [0, 1, 1], [1, 1, 1]];
+    var minT = Infinity;
+    combos.forEach(function (c) {
+      var t = findBiologicalBoundaryT(mixDir(c[0], c[1], c[2]));
+      if (t < minT) minT = t;
+    });
+    return minT;
+  })();
+
+  // ==================================================================
+  // RGB Display Gamut -- every color this phone screen can actually show,
+  // by mixing its own R, G, and B subpixels in any ratio.
+  //
+  // Uses its own primaries (R_DISPLAY/G_DISPLAY/B_DISPLAY, at the shared
+  // RGB_PRIMARY_SCALE brightness derived just above), NOT sp.point --
+  // deliberately more conservative than the individual ray tips, for the
+  // reason documented there. Mixing the three at independent ratios
+  // r,g,b in [0,1] (each a fraction of that shared brightness, additive
+  // since real subpixels just add light) sweeps out a parallelepiped: 8
+  // corners are black, each single channel alone, each pair together
+  // (yellow/magenta/cyan), and all three together -- a "display white"
+  // that's a genuinely different point from either the pigment gamut's
+  // (100,100,100) or the biological gamut's broadband-white vertex, since
+  // it's built from this one phone's specific primaries, not a perfect
+  // reflector or a flat spectrum. By construction every one of these 8
+  // corners sits inside/on the biological gamut, and since that gamut is
+  // convex, the whole parallelepiped -- every mix, not just the corners --
+  // does too.
+  //
+  // Unlike the pigment and biological gamuts (translucent, shown to
+  // compare their shapes), this solid is rendered in the real color at
+  // every point: each small tile's fill is the sRGB hex of its own
+  // (r,g,b) ratio, gamma-encoded the standard way (IEC 61966-2-1) so it
+  // reads as the actual color, not a linear-light approximation that
+  // would look too dark.
+  // ==================================================================
+
+  function srgbEncode8(linear) {
+    var v = Math.max(0, Math.min(1, linear));
+    var s = v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+    return Math.round(s * 255);
+  }
+  function rgbRatioToHex(r, g, b) {
+    function h(v) { var s = srgbEncode8(v).toString(16); return s.length < 2 ? "0" + s : s; }
+    return "#" + h(r) + h(g) + h(b);
+  }
+
+  var R_DISPLAY = SUBPIXELS[0].unit.map(function (v) { return v * RGB_PRIMARY_SCALE; });
+  var G_DISPLAY = SUBPIXELS[1].unit.map(function (v) { return v * RGB_PRIMARY_SCALE; });
+  var B_DISPLAY = SUBPIXELS[2].unit.map(function (v) { return v * RGB_PRIMARY_SCALE; });
+  function rgbGamutPoint(r, g, b) {
+    return [
+      r * R_DISPLAY[0] + g * G_DISPLAY[0] + b * B_DISPLAY[0],
+      r * R_DISPLAY[1] + g * G_DISPLAY[1] + b * B_DISPLAY[1],
+      r * R_DISPLAY[2] + g * G_DISPLAY[2] + b * B_DISPLAY[2]
+    ];
+  }
+
+  // Subdivide each of the 6 faces into an NxN grid of small flat-colored
+  // tiles (2 triangles each) so the whole solid reads as a smooth color
+  // gradient rather than 6 flat-shaded facets.
+  var RGB_GAMUT_SUBDIV = 10;
+  function ratioAt(fixedAxis, fixedVal, u, v) {
+    if (fixedAxis === "r") return [fixedVal, u, v];
+    if (fixedAxis === "g") return [u, fixedVal, v];
+    return [u, v, fixedVal];
+  }
+  function buildGamutFace(fixedAxis, fixedVal) {
+    var tris = [];
+    var n = RGB_GAMUT_SUBDIV;
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var u0 = i / n, u1 = (i + 1) / n, v0 = j / n, v1 = (j + 1) / n;
+        var c00 = ratioAt(fixedAxis, fixedVal, u0, v0), c10 = ratioAt(fixedAxis, fixedVal, u1, v0);
+        var c11 = ratioAt(fixedAxis, fixedVal, u1, v1), c01 = ratioAt(fixedAxis, fixedVal, u0, v1);
+        var p00 = rgbGamutPoint(c00[0], c00[1], c00[2]), p10 = rgbGamutPoint(c10[0], c10[1], c10[2]);
+        var p11 = rgbGamutPoint(c11[0], c11[1], c11[2]), p01 = rgbGamutPoint(c01[0], c01[1], c01[2]);
+        var cCenter = ratioAt(fixedAxis, fixedVal, (u0 + u1) / 2, (v0 + v1) / 2);
+        var hex = rgbRatioToHex(cCenter[0], cCenter[1], cCenter[2]);
+        tris.push({ pts: [p00, p10, p11], color: hex });
+        tris.push({ pts: [p00, p11, p01], color: hex });
+      }
+    }
+    return tris;
+  }
+
+  var RGB_GAMUT_TRIANGLES = []
+    .concat(buildGamutFace("b", 0), buildGamutFace("b", 1))
+    .concat(buildGamutFace("g", 0), buildGamutFace("g", 1))
+    .concat(buildGamutFace("r", 0), buildGamutFace("r", 1));
+
+  // ==================================================================
+  // Scene geometry / camera
+  // ==================================================================
+
+  // Each axis runs 0-100 (percent relative cone excitation), sharing a single
+  // origin corner (0,0,0) -- "no stimulation" on all three cones. Rotation
+  // orbits around the space's centroid (50,50,50), not that corner, so the
+  // whole occupied volume turns in place under the cursor -- the axes just
+  // happen to start at one corner of it, the way an RGB cube's axes do.
+  var CX = 450, CY = 390;
+  var SCALE = 3.2;        // px per percentage point
+  var CAMERA_DIST = 750;  // px; perspective camera distance along Z
+
+  var AXES = [
+    { key: "L", dir: [1, 0, 0], tickDir: [0, -1, 0] },
+    { key: "M", dir: [0, 1, 0], tickDir: [0, 0, -1] },
+    { key: "S", dir: [0, 0, 1], tickDir: [-1, 0, 0] }
+  ];
+  var TICKS = [25, 50, 75, 100];
+
+  function dataToCentered(p) {
+    // data space 0..100 -> centered units -50..50 -> pixels
+    return {
+      x: (p[0] - 50) * SCALE,
+      y: (p[1] - 50) * SCALE,
+      z: (p[2] - 50) * SCALE
+    };
+  }
+
+  function add(a, b, s) {
+    s = s === undefined ? 1 : s;
+    return [a[0] + b[0] * s, a[1] + b[1] * s, a[2] + b[2] * s];
+  }
+
+  // ---- rotation state, driven by pointer drag ----
+  var yaw = -0.6;   // radians, around vertical (screen Y) axis
+  var pitch = 0.35; // radians, around horizontal (screen X) axis
+  var PITCH_LIMIT = 1.48; // just under 90deg, avoids gimbal flip
+
+  function rotate(p) {
+    var cosY = Math.cos(yaw), sinY = Math.sin(yaw);
+    var x1 = p.x * cosY + p.z * sinY;
+    var z1 = -p.x * sinY + p.z * cosY;
+    var y1 = p.y;
+
+    var cosX = Math.cos(pitch), sinX = Math.sin(pitch);
+    var y2 = y1 * cosX - z1 * sinX;
+    var z2 = y1 * sinX + z1 * cosX;
+
+    return { x: x1, y: y2, z: z2 };
+  }
+
+  function rotateData(dataPoint) {
+    return rotate(dataToCentered(dataPoint));
+  }
+
+  function project(dataPoint) {
+    var r = rotateData(dataPoint);
+    var persp = CAMERA_DIST / (CAMERA_DIST + r.z);
+    return { x: CX + r.x * persp, y: CY - r.y * persp, z: r.z, scale: persp };
+  }
+
+  // ==================================================================
+  // Gamut solid layers -- built once each, mutated + depth-reordered
+  // every frame. The biological gamut is the larger, fainter volume;
+  // the pigment gamut nests across it and reads more solid.
+  // ==================================================================
+
+  var biologicalLayer = el("g", { id: "biological-layer" });
+  svg.appendChild(biologicalLayer);
+  var pigmentLayer = el("g", { id: "pigment-layer" });
+  svg.appendChild(pigmentLayer);
+  var rgbGamutLayer = el("g", { id: "rgb-gamut-layer" });
+  svg.appendChild(rgbGamutLayer);
+
+  var PIGMENT_OPACITY_MIN = 0.10, PIGMENT_OPACITY_MAX = 0.29;
+  var BIOLOGICAL_OPACITY_MIN = 0.07, BIOLOGICAL_OPACITY_MAX = 0.15;
+  var RGB_GAMUT_OPACITY_MIN = 0.55, RGB_GAMUT_OPACITY_MAX = 0.95;
+
+  function buildPolys(triangles, layer) {
+    return triangles.map(function (tri) {
+      var p = el("polygon", { fill: "#fff" });
+      layer.appendChild(p);
+      return { el: p, pts: tri };
+    });
+  }
+  // same as buildPolys, but each triangle carries its own real color
+  // instead of the shared translucent white fill
+  function buildColoredPolys(triangleObjs, layer) {
+    return triangleObjs.map(function (t) {
+      var p = el("polygon", { fill: t.color });
+      layer.appendChild(p);
+      return { el: p, pts: t.pts };
+    });
+  }
+
+  var pigmentPolys = buildPolys(PIGMENT_TRIANGLES, pigmentLayer);
+  var biologicalPolys = buildPolys(BIOLOGICAL_TRIANGLES, biologicalLayer);
+  var rgbGamutPolys = buildColoredPolys(RGB_GAMUT_TRIANGLES, rgbGamutLayer);
+
+  function sub(a, b) { return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }; }
+  function cross(a, b) {
+    return { x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x };
+  }
+
+  function renderSolidPolys(polys, opacityMin, opacityMax) {
+    for (var n = 0; n < polys.length; n++) {
+      var item = polys[n];
+      var r0 = rotateData(item.pts[0]), r1 = rotateData(item.pts[1]), r2 = rotateData(item.pts[2]);
+      var normal = cross(sub(r1, r0), sub(r2, r0));
+      var nLen = Math.sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+      var facing = nLen > 0 ? Math.abs(normal.z) / nLen : 0;
+      item.opacity = opacityMin + (opacityMax - opacityMin) * facing;
+      item.z = (r0.z + r1.z + r2.z) / 3;
+
+      var persp0 = CAMERA_DIST / (CAMERA_DIST + r0.z);
+      var persp1 = CAMERA_DIST / (CAMERA_DIST + r1.z);
+      var persp2 = CAMERA_DIST / (CAMERA_DIST + r2.z);
+      item.pointsAttr =
+        (CX + r0.x * persp0).toFixed(1) + "," + (CY - r0.y * persp0).toFixed(1) + " " +
+        (CX + r1.x * persp1).toFixed(1) + "," + (CY - r1.y * persp1).toFixed(1) + " " +
+        (CX + r2.x * persp2).toFixed(1) + "," + (CY - r2.y * persp2).toFixed(1);
+    }
+
+    polys.sort(function (a, b) { return b.z - a.z; }); // farthest first
+
+    for (n = 0; n < polys.length; n++) {
+      var it = polys[n];
+      it.el.setAttribute("points", it.pointsAttr);
+      it.el.setAttribute("fill-opacity", it.opacity.toFixed(3));
+      it.el.parentNode.appendChild(it.el); // re-append in sorted order = correct paint order
+    }
+  }
+
+  // ==================================================================
+  // Axes layer -- cheap enough to fully rebuild every frame
+  // ==================================================================
+
+  var axesLayer = el("g", { id: "axes-layer" });
+  svg.appendChild(axesLayer);
+
+  function renderAxes() {
+    while (axesLayer.firstChild) axesLayer.removeChild(axesLayer.firstChild);
+
+    // depth-sort axes back-to-front so nearer lines/labels draw on top
+    var ordered = AXES.slice().sort(function (a, b) {
+      var za = rotateData(a.dir.map(function (d) { return d * 100; })).z;
+      var zb = rotateData(b.dir.map(function (d) { return d * 100; })).z;
+      return zb - za; // farthest (largest z) first
+    });
+
+    var origin = [0, 0, 0];
+    var originPx = project(origin);
+
+    ordered.forEach(function (axis) {
+      var g = el("g", {});
+      var end = axis.dir.map(function (d) { return d * 100; });
+      var endPx = project(end);
+
+      // axis line
+      g.appendChild(el("line", {
+        x1: originPx.x.toFixed(2), y1: originPx.y.toFixed(2),
+        x2: endPx.x.toFixed(2), y2: endPx.y.toFixed(2),
+        "stroke-width": 1.5
+      }));
+
+      // ticks
+      TICKS.forEach(function (t) {
+        var base = axis.dir.map(function (d) { return d * t; });
+        var tickEnd = add(base, axis.tickDir, 4);
+        var labelPos = add(base, axis.tickDir, 11);
+        var bPx = project(base), tPx = project(tickEnd), lPx = project(labelPos);
+
+        g.appendChild(el("line", {
+          x1: bPx.x.toFixed(2), y1: bPx.y.toFixed(2),
+          x2: tPx.x.toFixed(2), y2: tPx.y.toFixed(2),
+          "stroke-width": 1
+        }));
+
+        var label = el("text", {
+          class: "tick-label",
+          x: lPx.x.toFixed(2), y: lPx.y.toFixed(2),
+          "text-anchor": "middle", "dominant-baseline": "middle"
+        });
+        label.textContent = t === 100 ? "100%" : t;
+        g.appendChild(label);
+      });
+
+      // axis letter, past the 100% tick
+      var letterPos = add(end, axis.tickDir, 22);
+      var letterPx = project(letterPos);
+      var letter = el("text", {
+        class: "axis-letter",
+        x: letterPx.x.toFixed(2), y: letterPx.y.toFixed(2),
+        "text-anchor": "middle", "dominant-baseline": "middle"
+      });
+      letter.textContent = axis.key;
+      g.appendChild(letter);
+
+      // tip marker
+      g.appendChild(el("circle", { cx: endPx.x.toFixed(2), cy: endPx.y.toFixed(2), r: 2.5 }));
+
+      axesLayer.appendChild(g);
+    });
+
+    // origin marker (0% on all three cones), drawn last so it stays visible
+    axesLayer.appendChild(el("circle", { cx: originPx.x.toFixed(2), cy: originPx.y.toFixed(2), r: 3 }));
+  }
+
+  // ==================================================================
+  // RGB pixel rays -- also cheap to fully rebuild every frame
+  // ==================================================================
+
+  var pixelsLayer = el("g", { id: "pixels-layer" });
+  svg.appendChild(pixelsLayer);
+
+  function renderPixels() {
+    while (pixelsLayer.firstChild) pixelsLayer.removeChild(pixelsLayer.firstChild);
+
+    var originPx = project([0, 0, 0]);
+
+    var ordered = SUBPIXELS.slice().sort(function (a, b) {
+      return rotateData(b.point).z - rotateData(a.point).z; // farthest first
+    });
+
+    ordered.forEach(function (sp) {
+      var gamutPx = project(sp.gamutPoint);
+      var tipPx = project(sp.point);
+
+      // solid: achievable by a reflecting surface under D65 (inside the gamut solid)
+      pixelsLayer.appendChild(el("line", {
+        x1: originPx.x.toFixed(2), y1: originPx.y.toFixed(2),
+        x2: gamutPx.x.toFixed(2), y2: gamutPx.y.toFixed(2),
+        "stroke-width": 2, style: "stroke:" + sp.color
+      }));
+
+      // dashed: past the visible-gamut boundary -- only a self-luminous source gets here
+      pixelsLayer.appendChild(el("line", {
+        x1: gamutPx.x.toFixed(2), y1: gamutPx.y.toFixed(2),
+        x2: tipPx.x.toFixed(2), y2: tipPx.y.toFixed(2),
+        "stroke-width": 2, "stroke-dasharray": "5 4", style: "stroke:" + sp.color + "; opacity:0.55"
+      }));
+
+      // open ring marks exactly where the ray crosses the gamut boundary
+      pixelsLayer.appendChild(el("circle", {
+        cx: gamutPx.x.toFixed(2), cy: gamutPx.y.toFixed(2), r: 4,
+        style: "fill:none; stroke:" + sp.color
+      }));
+
+      pixelsLayer.appendChild(el("circle", {
+        cx: tipPx.x.toFixed(2), cy: tipPx.y.toFixed(2), r: 4, style: "fill:" + sp.color
+      }));
+
+      var label = el("text", {
+        class: "axis-letter",
+        x: tipPx.x.toFixed(2), y: (tipPx.y - 14).toFixed(2),
+        "text-anchor": "middle", "dominant-baseline": "middle",
+        style: "fill:" + sp.color
+      });
+      label.textContent = sp.key;
+      pixelsLayer.appendChild(label);
+    });
+  }
+
+  // ==================================================================
+  // User Color -- an arbitrary (r,g,b) hex color, entered by hand, shown
+  // both as a flat swatch and as a dot at that color's own position in
+  // the space.
+  //
+  // The three sliders are ordinary 8-bit sRGB channel values (0-255,
+  // gamma-encoded -- exactly what a hex color like #a3f200 already is),
+  // so they're decoded through the sRGB EOTF (the inverse of
+  // srgbEncode8 above, IEC 61966-2-1) into a linear 0-1 ratio per
+  // channel before doing any LMS math -- skipping that step would treat
+  // gamma-encoded numbers as if they were already linear brightness,
+  // which is a different, visibly-wrong quantity (the same distinction
+  // the RGB Display Gamut's own coloring is careful about, just run in
+  // reverse here).
+  //
+  // Those linear ratios feed directly into rgbGamutPoint (the exact same
+  // function the RGB Display Gamut solid's own triangles are built
+  // from), not some separate calculation -- so the dot always lands
+  // somewhere on or inside that solid, by construction, matching the
+  // physical claim being made: "this is what mixing the phone's own R,
+  // G, and B subpixels at these three levels actually looks like, and
+  // here's where that mixture sits in cone-response space."
+  // ==================================================================
+
+  function srgbDecode(s255) {
+    var s = Math.max(0, Math.min(255, s255)) / 255;
+    return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  }
+  function toHex2(v) { var s = Math.round(v).toString(16); return s.length < 2 ? "0" + s : s; }
+  function sliderHex(r, g, b) { return "#" + toHex2(r) + toHex2(g) + toHex2(b); }
+
+  var userColorLayer = el("g", { id: "user-color-layer" });
+  svg.appendChild(userColorLayer);
+
+  var userRInput = document.getElementById("user-r");
+  var userGInput = document.getElementById("user-g");
+  var userBInput = document.getElementById("user-b");
+
+  function renderUserColor() {
+    while (userColorLayer.firstChild) userColorLayer.removeChild(userColorLayer.firstChild);
+
+    var rVal = +userRInput.value, gVal = +userGInput.value, bVal = +userBInput.value;
+    var hex = sliderHex(rVal, gVal, bVal);
+
+    document.getElementById("user-r-val").textContent = rVal;
+    document.getElementById("user-g-val").textContent = gVal;
+    document.getElementById("user-b-val").textContent = bVal;
+    document.getElementById("user-swatch").style.background = hex;
+    document.getElementById("user-hex").textContent = hex.toUpperCase();
+
+    if (!showUserColor) return;
+
+    var pt = rgbGamutPoint(srgbDecode(rVal), srgbDecode(gVal), srgbDecode(bVal));
+    var px = project(pt);
+    userColorLayer.appendChild(el("circle", {
+      cx: px.x.toFixed(2), cy: px.y.toFixed(2), r: 7,
+      style: "fill:" + hex + "; stroke:#fff; stroke-width:1.5"
+    }));
+  }
+
+  [userRInput, userGInput, userBInput].forEach(function (input) {
+    input.addEventListener("input", function () { scheduleRender(); });
+  });
+
+  // ---- visibility toggles ----
+  var showAxes = true, showPigment = true, showBiological = true, showRgbGamut = true, showPixels = true;
+  var showUserColor = false;
+
+  function wireToggle(containerId, onChange) {
+    var buttons = document.getElementById(containerId).querySelectorAll("button");
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        buttons.forEach(function (b) { b.removeAttribute("data-active"); });
+        btn.setAttribute("data-active", "true");
+        onChange(btn.getAttribute("data-key") === "on");
+        render();
+      });
+    });
+  }
+  wireToggle("axes-toggle", function (on) { showAxes = on; });
+  wireToggle("pigment-toggle", function (on) { showPigment = on; });
+  wireToggle("biological-toggle", function (on) { showBiological = on; });
+  wireToggle("rgb-gamut-toggle", function (on) { showRgbGamut = on; });
+  wireToggle("pixels-toggle", function (on) { showPixels = on; });
+  wireToggle("user-color-toggle", function (on) {
+    showUserColor = on;
+    document.getElementById("user-color-panel").classList.toggle("active", on);
+  });
+
+  function render() {
+    if (showBiological) {
+      biologicalLayer.removeAttribute("display");
+      renderSolidPolys(biologicalPolys, BIOLOGICAL_OPACITY_MIN, BIOLOGICAL_OPACITY_MAX);
+    } else {
+      biologicalLayer.setAttribute("display", "none");
+    }
+    if (showPigment) {
+      pigmentLayer.removeAttribute("display");
+      renderSolidPolys(pigmentPolys, PIGMENT_OPACITY_MIN, PIGMENT_OPACITY_MAX);
+    } else {
+      pigmentLayer.setAttribute("display", "none");
+    }
+    if (showRgbGamut) {
+      rgbGamutLayer.removeAttribute("display");
+      renderSolidPolys(rgbGamutPolys, RGB_GAMUT_OPACITY_MIN, RGB_GAMUT_OPACITY_MAX);
+    } else {
+      rgbGamutLayer.setAttribute("display", "none");
+    }
+    if (showPixels) {
+      pixelsLayer.removeAttribute("display");
+      renderPixels();
+    } else {
+      pixelsLayer.setAttribute("display", "none");
+    }
+    if (showAxes) {
+      axesLayer.removeAttribute("display");
+      renderAxes();
+    } else {
+      axesLayer.setAttribute("display", "none");
+    }
+    renderUserColor();
+  }
+
+  // ---- pointer drag -> rotation ----
+  var dragging = false;
+  var lastX = 0, lastY = 0;
+  var SENSITIVITY = 0.008; // radians per px
+  var frameScheduled = false;
+
+  function scheduleRender() {
+    if (frameScheduled) return;
+    frameScheduled = true;
+    requestAnimationFrame(function () {
+      frameScheduled = false;
+      render();
+    });
+  }
+
+  svg.addEventListener("pointerdown", function (e) {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    svg.classList.add("dragging");
+    svg.setPointerCapture(e.pointerId);
+  });
+
+  svg.addEventListener("pointermove", function (e) {
+    if (!dragging) return;
+    var dx = e.clientX - lastX;
+    var dy = e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    yaw -= dx * SENSITIVITY;
+    pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, pitch - dy * SENSITIVITY));
+    scheduleRender();
+  });
+
+  function endDrag(e) {
+    dragging = false;
+    svg.classList.remove("dragging");
+  }
+  svg.addEventListener("pointerup", endDrag);
+  svg.addEventListener("pointercancel", endDrag);
+
+  render();
+})();
+</script>
+</body>
+</html>
