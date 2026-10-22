@@ -1,0 +1,29 @@
+{
+ "_note": "Mouth art sets for the 'Mouth art' menu. files maps each Talker shape to an image name (no extension); \"blair\" is shorthand for AI/E/FV/L/MBP/O/U/WQ/etc/rest. bg = backing colour for transparent art. public:false sets are used locally but left out of the site export.",
+ "sets": {
+  "placeholder": {
+   "label": "Placeholder (drawn in code)",
+   "public": true
+  },
+  "rhubarb-lisa": {
+   "label": "Rhubarb \"Lisa\" (line art)",
+   "public": true,
+   "dir": "art/rhubarb-lisa",
+   "ext": "png",
+   "bg": "#dde3e8",
+   "files": {
+    "rest": "X",
+    "mbp": "A",
+    "etc": "B",
+    "e": "C",
+    "ai": "D",
+    "o": "E",
+    "u": "F",
+    "wq": "F",
+    "fv": "G",
+    "l": "H"
+   },
+   "credit": "Mouth drawings from the Rhubarb Lip Sync project (MIT license, copyright Daniel Wolf)."
+  }
+ }
+}

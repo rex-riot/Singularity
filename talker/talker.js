@@ -18,7 +18,7 @@ const el = (name, attrs = {}, parent = face) => {
   parent.appendChild(e);
   return e;
 };
-el('ellipse', { cx: 200, cy: 150, rx: 150, ry: 140, fill: 'none', stroke: '#2a2a2a' });
+const headOutline = el('ellipse', { cx: 200, cy: 150, rx: 150, ry: 140, fill: 'none', stroke: '#2a2a2a' });
 const clip = el('clipPath', { id: 'mouthClip' });
 const clipShape = el('ellipse', {}, clip);
 const inside = el('g', { 'clip-path': 'url(#mouthClip)' });
@@ -27,11 +27,40 @@ const teethTop = el('rect', { fill: '#fff' }, inside);
 const teethBottom = el('rect', { fill: '#fff' }, inside);
 const tongue = el('ellipse', { fill: '#E8350A' }, inside);
 const lips = el('ellipse', { fill: 'none', stroke: '#fff', 'stroke-width': 3 });
+// Image art sets draw into this box instead of the placeholder shapes above.
+const ART_BOX = { x: 60, y: 15, width: 280, height: 270 };
+const artBg = el('rect', { ...ART_BOX, display: 'none' });
+const artImg = el('image', { ...ART_BOX, preserveAspectRatio: 'xMidYMid meet', display: 'none' });
+
+// ---------- art sets ----------
+const BLAIR = { rest: 'rest', mbp: 'MBP', etc: 'etc', e: 'E', ai: 'AI', o: 'O', u: 'U', wq: 'WQ', fv: 'FV', l: 'L' };
+let artSets = {}, art = null;
+
+function setArt(id) {
+  const set = artSets[id];
+  art = set?.dir ? { ...set, files: set.files === 'blair' ? BLAIR : set.files } : null;
+  const placeholder = art ? 'none' : 'inline';
+  for (const e of [headOutline, inside, lips]) e.setAttribute('display', placeholder);
+  artImg.setAttribute('display', art ? 'inline' : 'none');
+  artBg.setAttribute('display', art?.bg ? 'inline' : 'none');
+  if (art?.bg) artBg.setAttribute('fill', art.bg);
+  if (art) for (const f of new Set(Object.values(art.files))) new Image().src = `${art.dir}/${f}.${art.ext}`;  // preload: no flicker
+  $('credit').textContent = set?.credit ?? '';
+  const shown = setShape.current;
+  setShape.current = null;
+  setShape(shown || 'rest');
+}
 
 function setShape(name) {
   const s = shapes[name];
   if (!s || setShape.current === name) return;
   setShape.current = name;
+  document.querySelectorAll('#shapes button').forEach(b => b.classList.toggle('on', b.dataset.shape === name));
+  if (art) {
+    const f = art.files[name] ?? art.files.rest;
+    artImg.setAttribute('href', `${art.dir}/${f}.${art.ext}`);
+    return;
+  }
   const rx = s.w / 2, ry = s.h / 2;
   for (const e of [clipShape, mouthFill, lips]) { e.setAttribute('cx', CX); e.setAttribute('cy', CY); e.setAttribute('rx', rx); e.setAttribute('ry', ry); }
   const tt = s.teethTop || 0, tb = s.teethBottom || 0;
@@ -43,7 +72,6 @@ function setShape(name) {
     tongue.setAttribute('cx', CX); tongue.setAttribute('rx', rx * 0.55); tongue.setAttribute('ry', ry * 0.4);
     tongue.setAttribute('cy', s.tongue === 'up' ? CY - ry + tt + ry * 0.3 : CY + ry * 0.6);
   }
-  document.querySelectorAll('#shapes button').forEach(b => b.classList.toggle('on', b.dataset.shape === name));
 }
 
 // ---------- playback loop ----------
@@ -291,6 +319,10 @@ async function init() {
     $('shapes').appendChild(b);
   }
   setShape('rest');
+
+  artSets = (await (await fetch('config/art-sets.json')).json()).sets;
+  $('artset').replaceChildren(...Object.entries(artSets).map(([id, s]) => Object.assign(document.createElement('option'), { value: id, textContent: s.label })));
+  $('artset').onchange = e => setArt(e.target.value);
 
   // Is the local helper server there? If not, fall back to pre-recorded mode.
   let voices = null;
