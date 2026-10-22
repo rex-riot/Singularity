@@ -1,5 +1,5 @@
 {
- "_note": "Mouth art sets for the 'Mouth art' menu. files maps each Talker shape to an image name (no extension); \"blair\" is shorthand for AI/E/FV/L/MBP/O/U/WQ/etc/rest. bg = backing colour for transparent art. public:false sets are used locally but left out of the site export.",
+ "_note": "Mouth art sets for the 'Mouth art' menu. files maps each Talker shape to an image name (no extension); \"blair\" is shorthand for AI/E/FV/L/MBP/O/U/WQ/etc/rest. bg = backing colour for transparent art. public:false sets are used locally but left out of the site export (currently all sets are public).",
  "sets": {
   "placeholder": {
    "label": "Placeholder (drawn in code)",
@@ -24,6 +24,39 @@
     "l": "H"
    },
    "credit": "Mouth drawings from the Rhubarb Lip Sync project (MIT license, copyright Daniel Wolf)."
+  },
+  "mouth-2": {
+   "label": "Cartoon mouths",
+   "public": true,
+   "dir": "art/mouth-2",
+   "ext": "jpg",
+   "files": "blair",
+   "credit": "From Papagayo-NG's bundled mouth sets (artist and license not stated there)."
+  },
+  "mouth-1": {
+   "label": "Ink mouths",
+   "public": true,
+   "dir": "art/mouth-1",
+   "ext": "png",
+   "files": "blair",
+   "bg": "#ffffff",
+   "credit": "From Papagayo-NG's bundled mouth sets (artist and license not stated there)."
+  },
+  "preston-blair": {
+   "label": "Preston Blair (whole head)",
+   "public": true,
+   "dir": "art/preston-blair",
+   "ext": "jpg",
+   "files": "blair",
+   "credit": "Preston Blair chart style, as bundled with Papagayo-NG (license not stated there)."
+  },
+  "gary-martin": {
+   "label": "3D rendered mouths",
+   "public": true,
+   "dir": "art/gary-martin",
+   "ext": "jpg",
+   "files": "blair",
+   "credit": "From Papagayo-NG's bundled mouth sets (credited there to Gary C Martin; license not stated)."
   }
  }
 }
