@@ -1,0 +1,15 @@
+{
+  "_note": "Placeholder mouth drawings (Preston Blair set). w/h = mouth size in the 400x300 face box. teethTop/teethBottom = height of the teeth showing. tongue: 'down' or 'up'. Your own art will replace these.",
+  "shapes": {
+    "rest": { "label": "rest", "w": 110, "h": 4 },
+    "mbp":  { "label": "MBP",  "w": 120, "h": 8 },
+    "etc":  { "label": "etc",  "w": 130, "h": 30, "teethTop": 12, "teethBottom": 8 },
+    "e":    { "label": "E",    "w": 170, "h": 38, "teethTop": 14, "teethBottom": 10 },
+    "ai":   { "label": "AI",   "w": 140, "h": 90, "teethTop": 16, "tongue": "down" },
+    "o":    { "label": "O",    "w": 80,  "h": 80, "tongue": "down" },
+    "u":    { "label": "U",    "w": 56,  "h": 56, "tongue": "down" },
+    "wq":   { "label": "WQ",   "w": 44,  "h": 44 },
+    "fv":   { "label": "FV",   "w": 140, "h": 40, "teethTop": 22 },
+    "l":    { "label": "L",    "w": 130, "h": 60, "teethTop": 14, "tongue": "up" }
+  }
+}

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Talker — SUPER POSITIONS</title>
+<meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+  :root { --bg:#000; --fg:#fff; --dim:#8a8a8a; --rule:#2a2a2a; --accent:#E8350A; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:300 15px/1.6 'Iosevka', ui-monospace, Menlo, Consolas, monospace; font-variant-ligatures:none; }
+  .site-back { position:fixed; top:10px; left:12px; z-index:1000; font-size:12px; color:var(--dim); background:#000; text-decoration:none; }
+  .site-back:hover { color:var(--accent); }
+  main { max-width:78rem; margin:0 auto; padding:3rem 2rem 4rem; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:2rem 3rem; }
+  h1 { grid-column:1/-1; font-weight:300; font-size:2rem; margin:0; }
+  .lede { grid-column:1/-1; color:var(--dim); margin:-1rem 0 0; }
+  label, .label { display:block; color:var(--dim); font-size:12px; margin:1rem 0 .25rem; }
+  textarea, select, input[type=number] { width:100%; background:#000; color:var(--fg); border:1px solid var(--rule); border-radius:0; font:inherit; padding:.5rem; }
+  textarea { height:16rem; resize:vertical; }
+  input[type=file] { color:var(--dim); font:inherit; font-size:12px; }
+  .row { display:flex; gap:1rem; align-items:end; }
+  .row > * { flex:1; }
+  button { background:#000; color:var(--fg); border:1px solid var(--fg); border-radius:0; font:inherit; padding:.4rem 1rem; cursor:pointer; }
+  button:hover:not(:disabled) { color:var(--accent); border-color:var(--accent); }
+  button:disabled { color:var(--dim); border-color:var(--rule); cursor:default; }
+  body.live .static-only, body.static .live-only { display:none; }
+  .buttons { display:flex; gap:.75rem; margin-top:1rem; }
+  #status { color:var(--dim); font-size:12px; margin-top:.75rem; min-height:1.6em; }
+  #status.err { color:var(--accent); }
+  #face { width:100%; height:auto; display:block; }
+  #shapes { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.5rem; }
+  #shapes button { padding:.1rem .5rem; font-size:12px; border-color:var(--rule); color:var(--dim); }
+  #shapes button.on { color:var(--accent); border-color:var(--accent); }
+  #timeline { position:relative; height:34px; border:1px solid var(--rule); margin-top:.25rem; cursor:pointer; overflow:hidden; }
+  #timeline .cue { position:absolute; top:0; bottom:0; border-right:1px solid #000; background:#2a2a2a; font-size:10px; line-height:34px; text-align:center; overflow:hidden; color:var(--fg); }
+  #timeline .cue.rest { background:#111; color:var(--dim); }
+  #timeline .run { position:absolute; bottom:0; height:3px; background:var(--dim); }
+  #playhead { position:absolute; top:0; bottom:0; width:1px; background:var(--accent); pointer-events:none; }
+  #words { margin-top:1rem; color:var(--dim); white-space:pre-wrap; max-height:11rem; overflow:auto; }
+  #words .w.on { color:var(--fg); text-decoration:underline; text-decoration-color:var(--accent); }
+  @media (max-width:900px) { main { grid-template-columns:1fr; padding:3rem 1.25rem 3rem; } }
+</style>
+</head>
+<body class="live">
+<a class="site-back" href="/">&larr; SUPER POSITIONS</a>
+<main>
+  <h1>Talker</h1>
+  <p class="lede">Text is spoken aloud while a placeholder mouth follows along. Try the different mouth timing methods on the same audio.</p>
+
+  <section>
+    <div class="live-only">
+      <label for="file">Text or Markdown file</label>
+      <input id="file" type="file" accept=".txt,.md,.markdown,text/plain">
+    </div>
+    <div class="static-only">
+      <label for="sample">Sample (pre-recorded &mdash; making new speech needs a helper program on the author's Mac)</label>
+      <select id="sample"></select>
+    </div>
+    <label for="text">Text</label>
+    <textarea id="text" spellcheck="false"></textarea>
+    <div class="row live-only">
+      <div><label for="voice">Voice (macOS say)</label><select id="voice"></select></div>
+      <div><label for="rate">Rate (words / min)</label><input id="rate" type="number" value="175" min="80" max="400"></div>
+    </div>
+    <label for="backend">Mouth timing</label>
+    <select id="backend">
+      <option value="rhubarb">Rhubarb (listens to the audio)</option>
+      <option value="cmu">CMU phonemes (text, estimated timing)</option>
+      <option value="letters">Letters (text, simplest guess)</option>
+    </select>
+    <div class="buttons">
+      <button id="speak">Speak</button>
+      <button id="toggle" disabled>Pause</button>
+      <button id="restart" disabled>Restart</button>
+    </div>
+    <div id="status"></div>
+    <div id="words"></div>
+  </section>
+
+  <section>
+    <svg id="face" viewBox="0 0 400 300" aria-label="Placeholder mouth"></svg>
+    <div class="label">Show a shape by hand</div>
+    <div id="shapes"></div>
+
+    <div class="label">Timeline (click to seek) &mdash; grey bar underneath = where the audio is actually speaking</div>
+    <div id="timeline"><div id="playhead"></div></div>
+
+    <label for="lead">Mouth lead: <span id="leadval">0</span> ms (positive = mouth moves earlier than the sound)</label>
+    <input id="lead" type="range" min="-300" max="300" value="0" step="10" style="width:100%">
+  </section>
+</main>
+<script src="talker.js"></script>
+</body>
+</html>

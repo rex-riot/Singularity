@@ -1,0 +1,12 @@
+[
+ {
+  "id": "hello",
+  "title": "hello",
+  "text": "Hello there.\n\nThis is a short test of the talking mouth. Bubbles float above the very big van, and Wendy whispers a few words.\n\nQuotes are read as plain text for now.\n\nFirst, a list item.\nSecond, another one.\n\nFinally, a link is read as just its words."
+ },
+ {
+  "id": "pangram",
+  "title": "pangram",
+  "text": "The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. Maybe Mama made a mighty big batch of moo-shu."
+ }
+]
