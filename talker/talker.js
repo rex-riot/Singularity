@@ -48,6 +48,7 @@ function setShape(name) {
 
 // ---------- playback loop ----------
 function frame() {
+  if (custom.active && !speechSynthesis.paused) customTick(performance.now());
   if (cues.length && !audio.paused) {
     const t = audio.currentTime + $('lead').value / 1000;
     setShape(cueAt(t)?.shape ?? 'rest');
@@ -133,6 +134,137 @@ async function speak() {
   $('speak').disabled = false;
 }
 
+// "Your own text" (the public site): there is no recorded audio, so the text is
+// spoken by the browser's built-in voice. We can't analyze that audio (so no
+// Rhubarb), but many voices announce each word as it starts ("boundary"
+// events). The mouth is timed word by word from those: each word's shapes are
+// spread across that word's duration, estimated from the speed measured so far.
+// If a voice sends no boundary events, words advance on the estimated schedule.
+const CUSTOM = '__custom__';
+const custom = { active: false, words: [], i: -1, wordStart: 0, boundaries: false, msPerWeight: 85 };
+let customModules = null, customText = '', customHi = -1;
+
+async function loadCustomModules() {
+  if (customModules) return customModules;
+  const [md, letters, cmuUnits, lettersMap, phonemeMap] = await Promise.all([
+    import('./lib/markdown.mjs'), import('./lib/timing-letters.mjs'), import('./lib/cmu-units.mjs'),
+    fetch('config/letters-map.json').then(r => r.json()), fetch('config/phoneme-map.json').then(r => r.json()),
+  ]);
+  return customModules = { md, letters, cmuUnits, lettersMap, phonemeMap, dictionary: null };
+}
+
+function loadBrowserVoices() {
+  const voices = (window.speechSynthesis?.getVoices() ?? []).filter(v => v.lang.startsWith('en'));
+  const keep = $('bvoice').value;
+  $('bvoice').replaceChildren(...voices.map(v => Object.assign(document.createElement('option'), { value: v.name, textContent: `${v.name} (${v.lang})` })));
+  $('bvoice').value = keep || voices.find(v => v.name === 'Samantha')?.name || voices.find(v => v.default)?.name || voices[0]?.name;
+}
+
+function highlightCustom(i) {
+  const spans = $('words').querySelectorAll('.w');
+  spans[customHi]?.classList.remove('on');
+  spans[i]?.classList.add('on');
+  customHi = i;
+}
+
+// A new word has started at time `at` (ms).
+function startWord(i, at, observed) {
+  if (observed && custom.i >= 0) {
+    // Learn the speaking speed from the word that just finished (smoothed).
+    const prev = custom.words[custom.i];
+    const ms = Math.min(250, Math.max(40, (at - custom.wordStart) / prev.weight));
+    custom.msPerWeight = custom.msPerWeight * 0.7 + ms * 0.3;
+  }
+  custom.i = i; custom.wordStart = at;
+  highlightCustom(i);
+}
+
+function customTick(now) {
+  const w = custom.words[custom.i];
+  if (!w) return setShape('rest');
+  const dur = w.weight * custom.msPerWeight;
+  if (!custom.boundaries && now - custom.wordStart >= dur && custom.i < custom.words.length - 1) {
+    startWord(custom.i + 1, custom.wordStart + dur, false);   // no word events: follow the schedule
+    return;
+  }
+  const f = (now - custom.wordStart) / dur;
+  if (f >= 1) return setShape('rest');                        // word is over; waiting for the next one
+  let acc = 0;
+  for (const u of w.units) { acc += u.weight; if (acc > f * w.weight) return setShape(u.shape); }
+  setShape('rest');
+}
+
+async function speakCustom() {
+  if (!('speechSynthesis' in window)) return status("This browser can't speak text.", true);
+  speechSynthesis.cancel(); audio.pause(); custom.active = false;
+  status('Preparing…');
+  try {
+    const m = await loadCustomModules();
+    const text = m.md.stripMarkdown($('text').value);
+    if (!text) return status('Type something first.', true);
+    const backend = $('backend').value;
+    if (backend === 'cmu' && !m.dictionary) {
+      status('Loading the pronunciation dictionary (about 1 MB)…');
+      m.dictionary = await (await fetch('cmu-dict.json')).json();
+    }
+    const unknown = new Set();
+    const words = [...text.matchAll(/\S+/g)].map(x => {
+      const units = backend === 'cmu'
+        ? m.cmuUnits.wordsToUnits(x[0], { dictionary: m.dictionary, phonemeMap: m.phonemeMap, lettersMap: m.lettersMap, unknown })
+        : m.letters.unitsForWord(x[0], m.lettersMap);
+      return { text: x[0], at: x.index, units, weight: units.reduce((s, u) => s + u.weight, 0) || 1 };
+    });
+
+    // Nothing recorded to draw on the timeline; show the words instead.
+    cues = []; duration = 0;
+    $('timeline').querySelectorAll('.cue, .run').forEach(n => n.remove());
+    $('words').replaceChildren(...words.flatMap(w => {
+      const s = document.createElement('span');
+      s.className = 'w'; s.textContent = w.text;
+      return [s, document.createTextNode(' ')];
+    }));
+    customHi = -1;
+
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = speechSynthesis.getVoices().find(v => v.name === $('bvoice').value) ?? null;
+    Object.assign(custom, { words, i: -1, boundaries: false, active: true });
+    u.onstart = () => startWord(0, performance.now(), false);
+    u.onboundary = e => {
+      if (e.name && e.name !== 'word') return;
+      custom.boundaries = true;
+      let i = 0;
+      while (i + 1 < words.length && words[i + 1].at <= e.charIndex) i++;
+      if (i !== custom.i) startWord(i, performance.now(), true);
+    };
+    u.onend = u.onerror = () => { custom.active = false; setShape('rest'); highlightCustom(-1); $('toggle').textContent = 'Pause'; };
+    speechSynthesis.speak(u);
+    status(['Browser voice', `timing: ${backend}, word by word`, unknown.size ? `guessed from letters: ${[...unknown].join(', ')}` : null].filter(Boolean).join(' · '));
+    $('toggle').disabled = $('restart').disabled = false;
+    $('toggle').textContent = 'Pause';
+  } catch (e) {
+    status(e.message, true);
+  }
+}
+
+function enterCustom(on) {
+  window.speechSynthesis?.cancel(); custom.active = false; audio.pause(); setShape('rest');
+  $('text').readOnly = !on;
+  $('custom-voice').hidden = !on;
+  $('speak').textContent = on ? 'Speak' : 'Play';
+  const rhubarb = $('backend').querySelector('[value=rhubarb]');
+  rhubarb.disabled = on;
+  if (on) {
+    if ($('backend').value === 'rhubarb') $('backend').value = 'cmu';
+    $('text').value = customText;
+    $('text').placeholder = 'Type or paste text here, then press Speak.';
+    $('text').focus();
+    status("Your own text is spoken by your browser's built-in voice. Rhubarb needs recorded audio, so it's only available for the samples.");
+    $('words').replaceChildren();
+  } else {
+    customText = $('text').value;
+  }
+}
+
 // Pre-recorded mode (the public site): no server, so the audio and the cues for
 // every backend were generated ahead of time (scripts/export-static.mjs).
 // Changing backend just swaps the cues; the audio keeps playing.
@@ -172,17 +304,33 @@ async function init() {
   } else {
     document.body.className = 'static';
     samples = await (await fetch('samples/index.json')).json();
-    $('sample').innerHTML = samples.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
+    $('sample').innerHTML = samples.map(s => `<option value="${s.id}">${s.title}</option>`).join('')
+      + `<option value="${CUSTOM}">Your own text…</option>`;
+    const isCustom = () => $('sample').value === CUSTOM;
     const showText = () => { $('text').value = samples.find(s => s.id === $('sample').value).text; };
     showText();
     $('text').readOnly = true;
     $('speak').textContent = 'Play';
-    $('speak').onclick = () => playStatic(true);
-    $('sample').onchange = () => { audio.pause(); showText(); playStatic(true); };
-    $('backend').onchange = () => { if (loadedSample) playStatic(false); };
+    $('speak').onclick = () => isCustom() ? speakCustom() : playStatic(true);
+    $('sample').onchange = () => {
+      if (isCustom()) { enterCustom(true); return; }
+      if ($('text').readOnly === false) enterCustom(false);
+      audio.pause(); showText(); playStatic(true);
+    };
+    $('backend').onchange = () => { if (!isCustom() && loadedSample) playStatic(false); };
+    loadBrowserVoices();
+    if (window.speechSynthesis) speechSynthesis.onvoiceschanged = loadBrowserVoices;
   }
-  $('toggle').onclick = () => audio.paused ? audio.play() : audio.pause();
-  $('restart').onclick = () => { audio.currentTime = 0; audio.play(); };
+  $('toggle').onclick = () => {
+    if (custom.active) {
+      if (speechSynthesis.paused) { speechSynthesis.resume(); $('toggle').textContent = 'Pause'; }
+      else { speechSynthesis.pause(); $('toggle').textContent = 'Resume'; }
+    } else audio.paused ? audio.play() : audio.pause();
+  };
+  $('restart').onclick = () => {
+    if ($('sample').value === CUSTOM) speakCustom();
+    else { audio.currentTime = 0; audio.play(); }
+  };
   $('lead').oninput = e => { $('leadval').textContent = e.target.value; };
   $('timeline').onclick = e => {
     if (!duration) return;

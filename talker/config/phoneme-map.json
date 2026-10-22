@@ -1,0 +1,18 @@
+{
+  "_note": "Used by the 'cmu' timing backend. ARPAbet phoneme -> Blair mouth shape. A list means a diphthong that glides through several shapes. null = no mouth movement of its own. Weights are relative durations.",
+  "weights": { "vowel": 1.6, "consonant": 0.8, "stop": 0.6, "stressed": 1.25, "stops": ["P", "B", "T", "D", "K", "G"] },
+  "phonemes": {
+    "AA": "ai", "AE": "ai", "AH": "ai", "AO": "o", "EH": "e", "ER": "e", "IH": "e", "IY": "e",
+    "UH": "u", "UW": "u", "OW": "o",
+    "AW": ["ai", "u"], "AY": ["ai", "e"], "EY": ["e", "e"], "OY": ["o", "e"],
+    "B": "mbp", "M": "mbp", "P": "mbp",
+    "F": "fv", "V": "fv",
+    "L": "l",
+    "W": "wq",
+    "R": "etc", "Y": "etc",
+    "CH": "etc", "JH": "etc", "SH": "etc", "ZH": "etc",
+    "TH": "etc", "DH": "etc",
+    "S": "etc", "Z": "etc", "T": "etc", "D": "etc", "K": "etc", "G": "etc", "N": "etc", "NG": "etc",
+    "HH": null
+  }
+}

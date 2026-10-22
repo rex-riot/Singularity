@@ -1,0 +1,20 @@
+{
+  "_note": "Used by the 'letters' timing backend. Maps letters (and letter pairs) to mouth shapes. null = silent. Edit freely, then press Speak again.",
+  "weights": { "vowel": 1.6, "consonant": 0.8 },
+  "letters": {
+    "a": "ai", "e": "e", "i": "e", "o": "o", "u": "u", "y": "e",
+    "b": "mbp", "m": "mbp", "p": "mbp",
+    "f": "fv", "v": "fv",
+    "l": "l",
+    "w": "wq", "q": "wq",
+    "h": null,
+    "c": "etc", "d": "etc", "g": "etc", "j": "etc", "k": "etc", "n": "etc",
+    "r": "etc", "s": "etc", "t": "etc", "x": "etc", "z": "etc"
+  },
+  "digraphs": {
+    "th": "etc", "sh": "etc", "ch": "etc", "ph": "fv", "wh": "wq", "qu": "wq",
+    "ee": "e", "ea": "e", "ey": "e", "ie": "e",
+    "oo": "u", "ou": "o", "oa": "o", "ow": "o",
+    "ai": "ai", "ay": "ai"
+  }
+}
